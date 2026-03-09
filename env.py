@@ -1,4 +1,5 @@
 import textarena as ta
+import re
 from typing import List
 from pydantic import BaseModel
 from openreward.environments import Environment, JSONObject, ToolOutput, TextBlock, tool
@@ -59,6 +60,23 @@ class MinesweeperEnvironment(Environment):
                 })
         return tasks
 
+    def _format_observation(self, observation) -> str:
+        if isinstance(observation, str):
+            match = None
+            for m in re.finditer(r'^\[(?!GAME\])[^\]]+\].*$', observation, re.MULTILINE):
+                match = m
+            if match:
+                return observation[match.end():].lstrip('\n')
+            return observation
+        if isinstance(observation, list):
+            if not observation:
+                return ""
+            last = observation[-1]
+            if isinstance(last, tuple) and len(last) >= 2:
+                return str(last[1])
+            return str(last)
+        return str(observation)
+
     def _map_reward(self, raw):
         """Map TextArena rewards (typically -1 to 1) to 0-1 range"""
         return max(0.0, min(1.0, (raw + 1.0) / 2.0))
@@ -66,7 +84,7 @@ class MinesweeperEnvironment(Environment):
     async def get_prompt(self):
         self.ta_env.reset(num_players=1, seed=self.config.seed)
         _, obs = self.ta_env.get_observation()
-        obs_text = obs if isinstance(obs, str) else (str(obs[-1][1]) if isinstance(obs, list) and obs and isinstance(obs[-1], tuple) and len(obs[-1]) >= 2 else str(obs))
+        obs_text = self._format_observation(obs)
 
         prompt = f"""You are playing Minesweeper.
 
@@ -118,7 +136,7 @@ Provide row and column indices (0-indexed). Avoid mines! Numbers indicate adjace
 
         # Game continues
         _, obs = self.ta_env.get_observation()
-        obs_text = obs if isinstance(obs, str) else (str(obs[-1][1]) if isinstance(obs, list) and obs and isinstance(obs[-1], tuple) and len(obs[-1]) >= 2 else str(obs))
+        obs_text = self._format_observation(obs)
 
         return ToolOutput(
             blocks=[TextBlock(text=obs_text)],
