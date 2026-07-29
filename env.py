@@ -77,10 +77,6 @@ class MinesweeperEnvironment(Environment):
             return str(last)
         return str(observation)
 
-    def _map_reward(self, raw):
-        """Map TextArena rewards (typically -1 to 1) to 0-1 range"""
-        return max(0.0, min(1.0, (raw + 1.0) / 2.0))
-
     async def get_prompt(self):
         self.ta_env.reset(num_players=1, seed=self.config.seed)
         _, obs = self.ta_env.get_observation()
@@ -114,9 +110,13 @@ Provide row and column indices (0-indexed). Avoid mines! Numbers indicate adjace
             self.game_done = True
             rewards, game_info = self.ta_env.close()
 
-            # Extract reward for player 0
-            raw = rewards.get(0, 0.0) if isinstance(rewards, dict) else float(rewards)
-            reward = self._map_reward(raw)
+            # Extract reward for player 0. TextArena's Minesweeper already
+            # returns a reward in [0, 1] (1.0 on a win, otherwise a continuous
+            # completion fraction), so pass it through unchanged rather than
+            # remapping an already-normalised value through (raw + 1) / 2, which
+            # compressed every outcome into [0.5, 1.0] and paid a mine hit above
+            # the draw value.
+            reward = rewards.get(0, 0.0) if isinstance(rewards, dict) else float(rewards)
 
             # Extract game info
             reason = ""
