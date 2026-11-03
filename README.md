@@ -19,11 +19,11 @@ Minesweeper does not require a sandbox. It has minimal compute requirements.
 
 ## License
 
-[MIT](https://github.com/LeonGuertler/TextArena/blob/main/LICENSE).
+[MIT](https://opensource.org/licenses/MIT). The underlying [TextArena](https://github.com/LeonGuertler/TextArena) framework is also MIT.
 
 ## Tasks
 
-There are two splits: train (600 tasks) and test (600 tasks). Each split contains 50 tasks across each of 12 variants:
+There are 600 tasks in the `train` split and 600 in `test`. Each split contains 50 tasks across each of 12 variants:
 
 - **Minesweeper-v0**
 - **Minesweeper-v0-train**
@@ -62,7 +62,7 @@ Minesweeper is a multi-turn environment.
 
 ## Environment Difficulty
 
-This environment ranges from moderate to very challenging depending on the variant. Board size and mine density increase from small to hard variants, requiring increasingly sophisticated probabilistic reasoning.
+Difficulty depends on the variant. In TextArena's registration the small variants use a 5x5 board with 5 mines, the base `Minesweeper-v0` variants 8x8 with 10 mines, medium 10x10 with 20 mines and hard 12x12 with 30 mines, each with a 100-turn limit. The `-train` and `-raw` suffixes change only the observation wrappers, not the board.
 
 ## Other Environment Requirements
 
@@ -75,11 +75,13 @@ Agents in Minesweeper interact only with a puzzle game and have no access to ext
 ## Citations
 
 ```bibtex
-@software{textarena2024,
-  author    = {Guertler, Leon and Banting, Wilfried and Pignatelli, Eduardo},
-  title     = {TextArena},
-  year      = {2024},
-  publisher = {GitHub},
-  url       = {https://github.com/LeonGuertler/TextArena}
+@misc{guertler2025textarena,
+    title={TextArena},
+    author={Leon Guertler and Bobby Cheng and Simon Yu and Bo Liu and Leshem Choshen and Cheston Tan},
+    year={2025},
+    eprint={2504.11442},
+    archivePrefix={arXiv},
+    primaryClass={cs.CL},
+    url={https://arxiv.org/abs/2504.11442},
 }
 ```
